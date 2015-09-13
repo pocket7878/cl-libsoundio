@@ -520,3 +520,15 @@
 @export
 (defcfun "soundio_ring_buffer_clear" :void
   (ring-buffer :pointer))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;
+;; SoundIO Higher level interface
+;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+@export
+(defmacro with-soundio (io-var &body body)
+  `(unwind-protect
+     (let ((,io-var (soundio-create)))
+       ,@body)
+     (soundio-destroy ,io-var)))
