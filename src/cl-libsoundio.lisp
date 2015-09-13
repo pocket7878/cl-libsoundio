@@ -1,8 +1,11 @@
 (in-package :cl-user)
 (defpackage cl-libsoundio
-  (:use :cl :cffi))
+  (:use :cl :cffi)
+  (:nicknames :soundio))
 
 (in-package :cl-libsoundio)
+
+(annot:enable-annot-syntax)
 
 (define-foreign-library libsoundio
     (:darwin (:or "libsoundio.dylib" "libsoundio.1.dylib"))
@@ -33,8 +36,8 @@
           :error-backend-disconnected
           :error-interrupted
           :error-underflow
-          :error-encoding-string
-          )
+          :error-encoding-string)
+(export 'soundio-error)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -110,6 +113,7 @@
   :channel-id-aux13
   :channel-id-aux14
   :channel-id-aux15)
+(export 'soundio-channel-id)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define SoundIoBackend
@@ -141,6 +145,7 @@
           :channel-layout-id7-point1-wide
           :channel-layout-id7-point1-wide-back
           :channel-layout-id-octagonal)
+(export 'soundio-channel-layout)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define SoundIoBackend
@@ -153,6 +158,7 @@
   :backend-core-audio
   :backend-wasapi
   :backend-dummy)
+(export 'soundio-backend)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define SoundIODeviceAim
@@ -160,6 +166,7 @@
 (defcenum soundio-device-aim
     :aim-input
   :aim-output)
+(export 'soundio-device-aim)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define SoundIoFormat
@@ -185,6 +192,7 @@
   :format-float64-le
   :format-float64-be
   )
+(export 'soundio-format)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;
@@ -199,6 +207,7 @@
             (name :string)
             (channel-count :int)
             (channels soundio-channel-id))
+(export 'soundio-channel-layout)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define SoundIoSimpleRateRange
@@ -206,6 +215,7 @@
 (defcstruct soundio-sample-rate-range
             (min :int)
             (max :int))
+(export 'soundio-sample-rate-range)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define SoundIoChannelArea
@@ -213,6 +223,7 @@
 (defcstruct soundio-channel-area
             (ptr :string)
             (step :int))
+(export 'soundio-channel-area)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define SoundIo
@@ -227,6 +238,7 @@
             (emit-rtprio-warning :pointer)
             (jack-info-callback :pointer)
             (jack-error-callback :pointer))
+(export 'soundio)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -251,6 +263,7 @@
             (is-raw :boolean)
             (ref-count :int)
             (probe-error :int))
+(export 'soundio-device)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define SoundIoOutStream
@@ -270,6 +283,7 @@
             (bytes-per-frame :int)
             (bytes-per-sample :int)
             (layout-error :int))
+(export 'soundio-outstream)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define SoundIoInStream
@@ -289,6 +303,7 @@
             (bytes-per-frame :int)
             (bytes-per-sample :int)
             (layout-error :int))
+(export 'soundio-instream)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -297,139 +312,211 @@
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+@export
 (defcfun "soundio_create" :pointer)
+
+@export
 (defcfun "soundio_destroy" :void (soundio :pointer))
+
+@export
 (defcfun "soundio_connect" :int (soundio :pointer))
+
+@export
 (defcfun "soundio_connect_backend" :int
   (soundio :pointer)
   (backend soundio-backend))
+
+@export
 (defcfun "soundio_disconnect" :void (soundio :pointer))
+@export
 (defcfun "soundio_strerror" :string (err :int))
+@export
 (defcfun "soundio_backend_name" :string (backend soundio-backend))
+@export
 (defcfun "soundio_backend_count" :int (soundio :pointer))
+@export
 (defcfun "soundio_get_backend" soundio-backend (soundio :pointer) (index :int))
+@export
 (defcfun "soundio_have_backend" :boolean (backend soundio-backend))
+@export
 (defcfun "soundio_flush_events" :void (soundio :pointer))
+@export
 (defcfun "soundio_wait_events" :void (soundio :pointer))
+@export
 (defcfun "soundio_wakeup" :void (soundio :pointer))
+@export
 (defcfun "soundio_force_device_scan" :void (soundio :pointer))
+@export
 (defcfun "soundio_channel_layout_equal" :boolean
   (layout-a :pointer)
   (layout-b :pointer))
+@export
 (defcfun "soundio_get_channel_name" :string (id soundio-channel-id))
+@export
 (defcfun "soundio_parse_channel_name" soundio-channel-id 
          (str :string)
          (str-len :int))
+@export
 (defcfun "soundio_channel_layout_builtin_count" :int)
+@export
 (defcfun "soundio_channel_layout_get_builtin" :pointer
          (index :int))
+@export
 (defcfun "soundio_channel_layout_get_default" :pointer
          (channel-count :int))
+@export
 (defcfun "soundio_channel_layout_find_channel" :int
          (layout :pointer)
          (channel soundio-channel-id))
+@export
 (defcfun "soundio_channel_layout_detect_builtin" :boolean
          (layout :pointer))
+@export
 (defcfun "soundio_best_matching_channel_layout" :pointer
          (preferred-layouts :pointer)
          (preferred-layout-count :int)
          (available-layouts :pointer)
          (available-layout-count :int))
+@export
 (defcfun "soundio_sort_channel_layouts" :void
          (layouts :pointer)
          (layout-count :int))
+@export
 (defcfun "soundio_get_bytes_per_sample" :int
          (format soundio-format))
+@export
 (defcfun "soundio_get_bytes_per_second" :int
          (format soundio-format)
          (channel-count :int)
          (sample-rate :int))
+@export
 (defcfun "soundio_format_string" :string
          (format soundio-format))
+@export
 (defcfun "soundio_input_device_count" :int (soundio :pointer))
+@export
 (defcfun "soundio_output_device_count" :int (soundio :pointer))
+@export
 (defcfun "soundio_get_input_device" :pointer
   (soundio :pointer)
   (index :int))
+@export
 (defcfun "soundio_get_output_device" :pointer
   (soundio :pointer)
   (index :int))
+@export
 (defcfun "soundio_default_input_device_index" :int (soundio :pointer))
+@export
 (defcfun "soundio_default_output_device_index" :int (soundio :pointer))
+@export
 (defcfun "soundio_device_ref" :void (device :pointer))
+@export
 (defcfun "soundio_device_unref" :void (device :pointer))
+@export
 (defcfun "soundio_device_equal" :boolean (device-a :pointer) (device-b :pointer))
+@export
 (defcfun "soundio_device_sort_channel_layouts" :void (device :pointer))
+@export
 (defcfun "soundio_device_supports_format" :boolean
          (device :pointer)
          (format soundio-format))
+@export
 (defcfun "soundio_device_supports_layout" :boolean
          (device :pointer)
          (layout :pointer))
+@export
 (defcfun "soundio_device_supports_sample_rate" :boolean
          (device :pointer)
          (sample-rate :int))
+@export
 (defcfun "soundio_device_nearest_sample_rate" :int
          (device :pointer)
          (sample-rate :int))
+@export
 (defcfun "soundio_outstream_create" :pointer (device :pointer))
+@export
 (defcfun "soundio_outstream_destroy" :void (outstream :pointer))
+@export
 (defcfun "soundio_outstream_open" :int (outstream :pointer))
+@export
 (defcfun "soundio_outstream_start" :int (outstream :pointer))
+@export
 (defcfun "soundio_outstream_begin_write" :int
   (outstream :pointer)
   (areas :pointer)
   (frame-count :pointer))
+@export
 (defcfun "soundio_outstream_end_write" :int
   (outstream :pointer))
+@export
 (defcfun "soundio_outstream_clear_buffer" :int
   (outstream :pointer))
+@export
 (defcfun "soundio_outstream_pause" :int
   (outstream :pointer)
   (pause :boolean))
+@export
 (defcfun "soundio_outstream_get_latency" :int
   (outstream :pointer)
   (out_latency :pointer))
+@export
 (defcfun "soundio_instream_create" :pointer
   (device :pointer))
+@export
 (defcfun "soundio_instream_destroy" :void
   (instream :pointer))
+@export
 (defcfun "soundio_instream_open" :int
   (instream :pointer))
+@export
 (defcfun "soundio_instream_start" :int
   (instream :pointer))
+@export
 (defcfun "soundio_instream_begin_read" :int
   (instream :pointer)
   (areas :pointer)
   (frame-count :pointer))
+@export
 (defcfun "soundio_instream_end_read" :int
   (instream :pointer))
+@export
 (defcfun "soundio_instream_pause" :int
   (instream :pointer)
   (pause :boolean))
+@export
 (defcfun "soundio_instream_get_latency" :int
   (instream :pointer)
   (out-latency :pointer))
+@export
 (defcfun "soundio_ring_buffer_create" :pointer
   (soundio :pointer)
   (requested-capacity :int))
+@export
 (defcfun "soundio_ring_buffer_destroy" :void
   (ring-buffer :pointer))
+@export
 (defcfun "soundio_ring_buffer_capacity" :int
   (ring-buffer :pointer))
+@export
 (defcfun "soundio_ring_buffer_write_ptr" :string
   (ring-buffer :pointer))
+@export
 (defcfun "soundio_ring_buffer_advance_write_ptr" :void
   (ring-buffer :pointer)
   (count :int))
+@export
 (defcfun "soundio_ring_buffer_read_ptr" :string
   (ring-buffer :pointer))
+@export
 (defcfun "soundio_ring_buffer_advance_read_ptr" :void
   (ring-buffer :pointer)
   (count :int))
+@export
 (defcfun "soundio_ring_buffer_fill_count" :int
   (ring-buffer :pointer))
+@export
 (defcfun "soundio_ring_buffer_free_count" :int
   (ring-buffer :pointer))
+@export
 (defcfun "soundio_ring_buffer_clear" :void
   (ring-buffer :pointer))

@@ -16,7 +16,8 @@
   :version "0.1"
   :author "Masato Sogame"
   :license ""
-  :depends-on (:cffi)
+  :depends-on (:cffi
+               :cl-annot)
   :components ((:module "src"
                 :components
                 ((:file "cl-libsoundio"))))
